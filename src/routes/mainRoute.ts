@@ -3,6 +3,7 @@ import { createClient } from "redis";
 import { configDotenv } from "dotenv";
 import { Server } from "socket.io";
 import http from "http";
+import { user } from "../models/userModel";
 
 const app = express();
 
@@ -31,13 +32,23 @@ io.on("connection", (_socket) => {
 
 getData.post("/signup", async (_req: Request, res: Response) => {
   try {
-    console.log();
     await client.connect();
   } catch (err) {
-    console.log(err);
+    console.log("Client is already connected");
   }
-  client.set("okay", 6);
-  res.status(200).json({ message: "you got it!" });
+  console.log(_req.body.userDetails.username);
+  if (_req.body.userDetails.username && _req.body.userDetails.passowrd) {
+    const userInfo: user = {
+      username: _req.body.userDetails.username,
+      password: _req.body.userDetails.password,
+    };
+    const usersExits = client.get("userOnline");
+    console.log(usersExits);
+    client.set("usersOnline", JSON.stringify(userInfo));
+    res.status(200).json({ message: "you got it!" });
+  } else {
+    res.status(400).json({ message: "Username and Password required" });
+  }
 });
 
 export { getData };
