@@ -36,16 +36,35 @@ getData.post("/signup", async (_req: Request, res: Response) => {
   } catch (err) {
     console.log("Client is already connected");
   }
-  console.log(_req.body.userDetails.username);
-  if (_req.body.userDetails.username && _req.body.userDetails.passowrd) {
+  if (_req.body.userDetails.username && _req.body.userDetails.password) {
     const userInfo: user = {
       username: _req.body.userDetails.username,
       password: _req.body.userDetails.password,
     };
-    const usersExits = client.get("userOnline");
-    console.log(usersExits);
-    client.set("usersOnline", JSON.stringify(userInfo));
-    res.status(200).json({ message: "you got it!" });
+    await client.get("usersOnline").then((result) => {
+      if (result === null) {
+        client.set("usersOnline", JSON.stringify([{ ...userInfo, id: 1 }]));
+        res.status(200).json({ message: "User Created!" });
+      } else {
+        let userDataSet: user[] = JSON.parse(result);
+
+        if (
+          userDataSet.filter((e) => e.username !== userInfo.username).length
+        ) {
+          userDataSet = [
+            ...userDataSet,
+            { ...userInfo, id: userDataSet.length + 1 },
+          ];
+
+          client.set("usersOnline", JSON.stringify(userDataSet));
+          res.status(200).json({ message: "User Created!" });
+        } else {
+          res
+            .status(409)
+            .json({ error: "Username Already Exists! Please login" });
+        }
+      }
+    });
   } else {
     res.status(400).json({ message: "Username and Password required" });
   }
