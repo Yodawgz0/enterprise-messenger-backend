@@ -1,11 +1,8 @@
 import express, { Request, Response } from "express";
 import { createClient } from "redis";
 import { configDotenv } from "dotenv";
-import { Server } from "socket.io";
-import http from "http";
-import { user } from "../models/userModel";
 
-const app = express();
+import { user } from "../models/userModel";
 
 configDotenv();
 
@@ -15,19 +12,12 @@ const uri: string = process.env["DB_URL"]!;
 const password: string = process.env["PASSWORD"]!;
 const port: string = process.env["PORT"]!;
 
-const server = http.createServer(app);
-const io = new Server(server);
-
 const client = createClient({
   password: password,
   socket: {
     host: uri,
     port: parseInt(port),
   },
-});
-
-io.on("connection", (_socket) => {
-  console.log("a user connected");
 });
 
 getData.post("/signup", async (_req: Request, res: Response) => {
@@ -41,9 +31,9 @@ getData.post("/signup", async (_req: Request, res: Response) => {
       username: _req.body.userDetails.username,
       password: _req.body.userDetails.password,
     };
-    await client.get("usersOnline").then((result) => {
+    await client.get("allUsers").then((result) => {
       if (result === null) {
-        client.set("usersOnline", JSON.stringify([{ ...userInfo, id: 1 }]));
+        client.set("allUsers", JSON.stringify([{ ...userInfo, id: 1 }]));
         res.status(200).json({ message: "User Created!" });
       } else {
         let userDataSet: user[] = JSON.parse(result);
@@ -56,7 +46,7 @@ getData.post("/signup", async (_req: Request, res: Response) => {
             { ...userInfo, id: userDataSet.length + 1 },
           ];
 
-          client.set("usersOnline", JSON.stringify(userDataSet));
+          client.set("allUsers", JSON.stringify(userDataSet));
           res.status(200).json({ message: "User Created!" });
         } else {
           res
