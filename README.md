@@ -1,5 +1,3 @@
 # enterprise-messenger-backend
 
-Something to go with vue front end but powered by websockets and redis 
-
-chat app
+Have done the setup of user reg but need to do the user lopgin
