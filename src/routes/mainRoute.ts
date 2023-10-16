@@ -3,6 +3,7 @@ import { createClient } from "redis";
 import { configDotenv } from "dotenv";
 
 import { user } from "../models/userModel";
+import { registerUser } from "../services/credUser";
 
 configDotenv();
 
@@ -31,30 +32,19 @@ getData.post("/signup", async (_req: Request, res: Response) => {
       username: _req.body.userDetails.username,
       password: _req.body.userDetails.password,
     };
-    await client.get("allUsers").then((result) => {
-      if (result === null) {
-        client.set("allUsers", JSON.stringify([{ ...userInfo, id: 1 }]));
+    const result: boolean | string = await registerUser(userInfo);
+
+    if (typeof result === "boolean") {
+      if (result === true) {
         res.status(200).json({ message: "User Created!" });
       } else {
-        let userDataSet: user[] = JSON.parse(result);
-
-        if (
-          userDataSet.filter((e) => e.username !== userInfo.username).length
-        ) {
-          userDataSet = [
-            ...userDataSet,
-            { ...userInfo, id: userDataSet.length + 1 },
-          ];
-
-          client.set("allUsers", JSON.stringify(userDataSet));
-          res.status(200).json({ message: "User Created!" });
-        } else {
-          res
-            .status(409)
-            .json({ error: "Username Already Exists! Please login" });
-        }
+        res
+          .status(409)
+          .json({ error: "Username Already Exists! Please login" });
       }
-    });
+    } else {
+      res.status(500).json({ message: result });
+    }
   } else {
     res.status(400).json({ message: "Username and Password required" });
   }
