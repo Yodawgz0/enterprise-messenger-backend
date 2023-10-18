@@ -6,7 +6,6 @@ configDotenv();
 const uri: string = process.env["DB_URL"]!;
 const password: string = process.env["PASSWORD"]!;
 const port: string = process.env["PORT"]!;
-console.log(port, parseInt(port));
 const client = createClient({
   password: password,
   socket: {
