@@ -13,14 +13,16 @@ getData.post("/signup", async (_req: Request, res: Response) => {
       password: _req.body.userDetails.password,
     };
     const result: boolean | string = await registerUser(userInfo);
-
     if (typeof result === "boolean") {
       if (result === true) {
         res.status(200).json({ message: "User Created!" });
       } else {
         res
           .status(409)
-          .json({ error: "Username Already Exists! Please login" });
+          .json({
+            error: "UserConflict",
+            message: "User already exists in the database.",
+          });
       }
     } else {
       res.status(500).json({ message: result });
