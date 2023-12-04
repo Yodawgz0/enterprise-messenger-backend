@@ -23,6 +23,7 @@ export const registerUser = async (
     console.log(err);
     console.log("Client is already connected");
   }
+  let returnVal: string | boolean = "";
   await client
     .get("allUsers")
     .then((result) => {
@@ -31,7 +32,6 @@ export const registerUser = async (
         return true;
       } else {
         let userDataSet: user[] = JSON.parse(result);
-
         if (
           userDataSet.filter((e) => e.username !== userInfo.username).length
         ) {
@@ -41,16 +41,17 @@ export const registerUser = async (
           ];
 
           client.set("allUsers", JSON.stringify(userDataSet));
-          return true;
+          returnVal = true;
         }
-        return false;
+        returnVal = false;
       }
+      return returnVal;
     })
     .catch((error) => {
       console.log(error);
-      return "Network Error!";
+      returnVal = "Network Error!";
     });
-  return "Something Went Wrong!";
+  return returnVal;
 };
 
 export const loginUser = async (userInfo: user): Promise<string | boolean> => {
