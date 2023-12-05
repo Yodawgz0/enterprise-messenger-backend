@@ -17,12 +17,10 @@ getData.post("/signup", async (_req: Request, res: Response) => {
       if (result === true) {
         res.status(200).json({ message: "User Created!" });
       } else {
-        res
-          .status(409)
-          .json({
-            error: "UserConflict",
-            message: "User already exists in the database.",
-          });
+        res.status(409).json({
+          error: "UserConflict",
+          message: "User already exists in the database.",
+        });
       }
     } else {
       res.status(500).json({ message: result });
