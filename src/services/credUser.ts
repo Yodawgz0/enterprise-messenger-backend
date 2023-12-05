@@ -61,26 +61,29 @@ export const loginUser = async (userInfo: user): Promise<string | boolean> => {
   } catch (err) {
     console.log("Client is already connected");
   }
+  let returnVal: string | boolean = "";
   await client
     .get("allUsers")
     .then((result) => {
-      console.log(result);
       if (result === null) {
-        return false;
+        returnVal = false;
       } else {
         let userDataSet: user[] = JSON.parse(result);
-        console.log(userDataSet);
         if (
           userDataSet.filter((e) => e.username === userInfo.username).length
         ) {
-          return true;
+          returnVal = true;
+        } else {
+          returnVal = false;
         }
-        return false;
       }
+      return returnVal;
     })
     .catch((error) => {
       console.log(error);
-      return "Network Error!";
+      returnVal = "Network Error!";
     });
-  return "Something Went Wrong!";
+  return returnVal.length || typeof returnVal === "boolean"
+    ? returnVal
+    : "Something Went Wrong!";
 };
