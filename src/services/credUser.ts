@@ -20,8 +20,8 @@ export const registerUser = async (
   try {
     await client.connect();
   } catch (err) {
-    console.log(err);
-    console.log("Client is already connected");
+    await client.disconnect();
+    await client.connect();
   }
   let returnVal: string | boolean = "";
   await client
@@ -29,11 +29,11 @@ export const registerUser = async (
     .then((result) => {
       if (result === null) {
         client.set("allUsers", JSON.stringify([{ ...userInfo, id: 1 }]));
-        return true;
+        returnVal = true;
       } else {
         let userDataSet: user[] = JSON.parse(result);
         if (
-          userDataSet.filter((e) => e.username !== userInfo.username).length
+          !userDataSet.filter((e) => e.username === userInfo.username).length
         ) {
           userDataSet = [
             ...userDataSet,
@@ -42,8 +42,9 @@ export const registerUser = async (
 
           client.set("allUsers", JSON.stringify(userDataSet));
           returnVal = true;
+        } else {
+          returnVal = false;
         }
-        returnVal = false;
       }
       return returnVal;
     })
